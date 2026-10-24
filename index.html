@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Scrapbook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            /* Latar belakang dengan tekstur kertas/halus */
+            background-color: #fdfbf7;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e6e1d6' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .handwriting {
+            font-family: 'Caveat', cursive;
+        }
+
+        /* --- STYLES UNTUK ALUR PAGE / TRANSISI --- */
+        .section-container {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+            transform: translateY(20px);
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .section-active {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- STYLES UNTUK MINI GAME --- */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 50px;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .memory-card {
+            aspect-ratio: 3/4;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: transform 0.3s, background-color 0.3s;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .memory-card.flipped {
+            transform: rotateY(180deg);
+            background-color: #ccfbf1; /* teal-100 */
+        }
+
+        .memory-card.matched {
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s 0.5s, opacity 0.5s;
+        }
+
+        .memory-card-front, .memory-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .memory-card-front {
+            background-color: #99f6e4; /* teal-200 */
+            color: #0f766e; /* teal-700 */
+            font-family: 'Caveat', cursive;
+            font-size: 2rem;
+            content: "?";
+        }
+
+        .memory-card-back {
+            transform: rotateY(180deg);
+            background-color: white;
+        }
+
+
+        /* --- STYLES ASLI (POLAROID & KADO) --- */
+        .polaroid-container {
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .polaroid-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+
+        .polaroid-container.flipped .polaroid-inner {
+            transform: rotateY(180deg);
+        }
+
+        .polaroid-front, .polaroid-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            background: white;
+            padding: 12px 12px 40px 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+
+        .polaroid-back {
+            transform: rotateY(180deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            background: #fff9f9;
+        }
+
+        .polaroid-container:nth-child(1) { transform: rotate(-3deg); }
+        .polaroid-container:nth-child(2) { transform: rotate(2deg) translateY(10px); }
+        .polaroid-container:nth-child(3) { transform: rotate(-1deg); }
+
+        .polaroid-container:hover {
+            z-index: 10;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        .gift-box {
+            animation: shake 1.5s infinite;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+            touch-action: manipulation;
+        }
+
+        .gift-box:hover {
+            transform: scale(1.1);
+            animation: none;
+        }
+        
+        .gift-box:active {
+            transform: scale(0.9);
+        }
+
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 50;
+        }
+        
+        #final-message {
+            transition: opacity 0.5s ease-in-out, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+            pointer-events: none;
+        }
+
+        #final-message.show {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body class="text-gray-800 relative">
+
+    <canvas id="confetti-canvas"></canvas>
+
+<!-- SECTION 1: LOGIN PAGE -->
+    <section id="section-login" class="section-container section-active flex-col items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border-2 border-teal-100 text-center relative overflow-hidden">
+            <div class="absolute -top-4 -right-4 text-6xl opacity-20">👋</div>
+            <h1 class="handwriting text-5xl text-teal-500 mb-2">Hello There!</h1>
+            <p class="text-gray-500 mb-6 text-sm">Sebelum masuk ke mesin waktu, absen dulu yuk...</p>
+            
+            <div id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-left text-sm font-semibold text-gray-700 mb-1">Nickname Keren Kamu</label>
+                    <input type="text" id="user-name" required placeholder="Cth: Bro / Bestie / Namanya" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-300 focus:border-teal-300 outline-none transition-all">
+                </div>
+                
+                <button type="button" id="login-btn" class="w-full mt-6 bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:-translate-y-1">
+                    Masuk ke Mesin Waktu ⏰
+                </button>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- SECTION 2: MINI GAME -->
+    <section id="section-game" class="section-container flex-col items-center justify-center p-4 hidden">
+        <div class="text-center mb-6">
+            <h2 class="handwriting text-4xl text-teal-500 mb-2">Pemanasan Otak Dulu!</h2>
+            <p class="text-gray-600 text-sm max-w-sm mx-auto">Cocokkan kartu yang sama untuk ngebuka jalan ke kejutanmu.</p>
+        </div>
+        
+        <div class="memory-grid" id="memory-board">
+            <!-- Kartu akan di-generate via JavaScript -->
+        </div>
+    </section>
+
+    <!-- SECTION 3: CONGRATULATIONS & TRANSITION -->
+    <section id="section-success" class="section-container flex-col items-center justify-center p-4 hidden">
+        <div class="bg-white p-10 rounded-2xl shadow-xl max-w-lg w-full text-center border-4 border-teal-200">
+            <div class="text-6xl mb-4 animate-bounce">🎉</div>
+            <h2 class="handwriting text-5xl text-teal-500 mb-4">Mantap, Berhasil!</h2>
+            <p class="text-lg text-gray-700 mb-6">
+                Good job, <span id="display-name" class="font-bold text-teal-600">Bro</span>! <br>
+                Lu udah berhasil nyelesain gamenya. Sekarang, waktunya lihat kejutannya...
+            </p>
+            <button id="btn-next-scrapbook" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                Gas Lihat Kejutan 🚀
+            </button>
+        </div>
+    </section>
+
+    <!-- SECTION 4: SCRAPBOOK ASLI -->
+    <main id="section-scrapbook" class="section-container flex-col items-center justify-center container mx-auto px-4 py-12 z-10 hidden">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-teal-500 mb-2">Gallery</h1>
+            <p class="text-lg text-gray-500 handwriting text-2xl">Tap foto-fotonya buat flashback...</p>
+        </div>
+
+        <!-- Music Player Container -->
+        <div class="flex flex-col md:flex-row items-center justify-center gap-4 mb-12 bg-white/60 backdrop-blur-sm p-4 rounded-2xl shadow-sm border-2 border-teal-100 max-w-lg mx-auto w-full transition-all">
+            <audio id="bg-music" loop>
+                <source src="soundtrack.mp3" type="audio/mpeg">
+                Browser kamu tidak mendukung elemen audio.
+            </audio>
+            
+            <button id="music-btn" class="bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-5 rounded-full flex items-center gap-2 transition-colors shadow-md text-sm md:text-base">
+                <span>▶️</span> Play Our Birthday Soundtrack
+            </button>
+            
+            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-inner border border-gray-100">
+                <span class="text-sm">🔉</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5" class="w-20 md:w-24 accent-teal-500 cursor-pointer">
+                <span class="text-sm">🔊</span>
+            </div>
+        </div>
+
+        <!-- Grid Polaroid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-[50px] max-w-4xl w-full mb-20 relative">
+            
+            <!-- Foto 1: Candid -->
+            <div class="polaroid-container aspect-[3/4] w-full max-w-[280px] mx-auto" onclick="this.classList.toggle('flipped')">
+                <div class="polaroid-inner">
+                    <div class="polaroid-front flex flex-col">
+                        <div class="flex-grow bg-gray-200 mb-3 overflow-hidden rounded">
+                            <img src="candid.jpg" alt="Candid" class="w-full h-full object-cover">
+                        </div>
+                        <p class="handwriting text-2xl text-center text-gray-700">Candid</p>
+                    </div>
+                    <div class="polaroid-back">
+                        <div>
+                            <p class="handwriting text-3xl text-pink-500 mb-2">"Perfect Angle"</p>
+                            <p class="text-sm text-gray-600 leading-relaxed">Siap KAKAK PMR 🫡⛑️!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Foto 2: Memory -->
+            <div class="polaroid-container aspect-[3/4] w-full max-w-[280px] mx-auto" onclick="this.classList.toggle('flipped')">
+                <div class="polaroid-inner">
+                    <div class="polaroid-front flex flex-col">
+                        <div class="flex-grow bg-gray-200 mb-3 overflow-hidden rounded">
+                            <img src="memory.jpg" alt="Memory" class="w-full h-full object-cover">
+                        </div>
+                        <p class="handwriting text-2xl text-center text-gray-700">Memory</p>
+                    </div>
+                    <div class="polaroid-back">
+                        <div>
+                            <p class="handwriting text-3xl text-blue-500 mb-2">"Unforgettable"</p>
+                            <p class="text-sm text-gray-600 leading-relaxed">Gatau mau naro ini aja di kategori memory wkwkwk, ini tuh lomba terakhir kita btw 😆</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+           <!-- Foto 3: Bu Dokter -->
+            <div class="polaroid-container aspect-[3/4] w-full max-w-[280px] mx-auto" onclick="this.classList.toggle('flipped')">
+                <div class="polaroid-inner">
+                    <div class="polaroid-front flex flex-col">
+                        <div class="flex-grow bg-gray-200 mb-3 overflow-hidden rounded">
+                            <video src="obatin kaki.mp4" autoplay muted loop playsinline class="w-full h-full object-cover"></video>
+                        </div>
+                        <p class="handwriting text-2xl text-center text-gray-700">Bu Dokter</p>
+                    </div>
+                    <div class="polaroid-back">
+                        <div>
+                            <p class="handwriting text-3xl text-green-600 mb-2">"Dokter Dadakan"</p>
+                            <p class="text-sm text-gray-600 leading-relaxed">Makasii loh ya ngobatin kaki  gua yg luka wkwkwk 🫵🏼😆</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kotak Kado -->
+        <div id="gift-wrapper" class="mt-8 flex flex-col items-center">
+            <p class="handwriting text-2xl text-gray-500 mb-4 animate-pulse">Ada sesuatu buat lu nih... Buka buruan!</p>
+            <div id="gift-btn" class="gift-box w-24 h-24 drop-shadow-lg relative">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="15" y="40" width="70" height="50" fill="#2DD4BF"/>
+                    <rect x="10" y="25" width="80" height="15" fill="#0D9488"/>
+                    <rect x="45" y="25" width="10" height="65" fill="#FBBF24"/>
+                    <path d="M50 25C50 25 35 10 40 5C45 0 50 15 50 25Z" fill="#FBBF24"/>
+                    <path d="M50 25C50 25 65 10 60 5C55 0 50 15 50 25Z" fill="#FBBF24"/>
+                </svg>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Pesan Utama -->
+    <div id="final-message" class="fixed inset-0 flex items-center justify-center z-40 bg-white/70 backdrop-blur-sm p-4 hidden">
+        <div class="bg-white max-w-lg w-full p-6 md:p-10 rounded-2xl shadow-2xl text-center border-4 border-teal-200 max-h-[95vh] overflow-y-auto">
+            <span id="final-name" class="hidden"></span>
+            <h2 class="handwriting text-4xl md:text-5xl text-teal-500 mb-4">Happy birthday yaa, Nun!! 🥳🤍</h2>
+            
+            <div class="text-gray-700 leading-relaxed mb-6 text-sm md:text-base text-left space-y-4">
+                <p>
+                    Semoga di umur yang ke-<span class="font-bold text-teal-600">19</span> ini Allah selalu jaga lu, sehatkan lu, lancarkan rezeki dan urusan lu, serta dekatkan lu sama hal-hal baik.
+                </p>
+                <p>
+                    Gua harap lu tetap jadi Ainun yang punya banyak rasa penasaran, berani nyoba hal baru, punya pemikiran sendiri, dan semangat sama hal-hal yang lu percaya. Jangan lupa istirahat juga di tengah semua kesibukan lu, yaa. Lu nggak harus selalu kuat atau produktif setiap saat.
+                </p>
+                <p>
+                    Jangan lupa buat slalu terima kasih sama diri sendiri. Gua doain semoga tahun ini bawa lebih banyak kesempatan baik, orang-orang tulus, dan momen-momen kecil yang bikin lu ngerasa bahagia. Semoga satu per satu doa dan mimpi lu Allah kasih jalan terbaik buat terwujud. Aamiin paling serius. 🤍
+                </p>
+            </div>
+
+            <p class="font-semibold text-lg text-teal-600 mb-8 italic">
+                Keep being you, Nun. Semoga hal-hal baik selalu nemuin jalan ke lu. 🌷
+            </p>
+            
+            <button id="close-modal" class="px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-full font-semibold transition-colors shadow-md">
+                Tutup Kado Ini
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- SISTEM NAVIGASI SECTION ---
+        let currentUserName = "";
+        
+        function switchSection(oldSectionId, newSectionId) {
+            const oldSec = document.getElementById(oldSectionId);
+            const newSec = document.getElementById(newSectionId);
+            
+            oldSec.style.opacity = '0';
+            oldSec.style.transform = 'translateY(-20px)';
+            
+            setTimeout(() => {
+                oldSec.classList.remove('section-active');
+                oldSec.classList.add('hidden');
+                oldSec.style.display = 'none';
+                
+                newSec.classList.remove('hidden');
+                newSec.style.display = 'flex';
+                
+                void newSec.offsetWidth; 
+                
+                newSec.classList.add('section-active');
+                newSec.style.opacity = '1';
+                newSec.style.transform = 'translateY(0)';
+            }, 600);
+        }
+
+        // --- LOGIC LOGIN (TANPA TANGGAL LAHIR & UMUR OTOMATIS) ---
+        document.getElementById('login-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            const nameInput = document.getElementById('user-name').value;
+            
+            if (!nameInput) {
+                alert("Isi namanya dulu dong!");
+                return;
+            }
+
+            currentUserName = nameInput;
+            
+            // Cukup update nama aja
+            document.getElementById('display-name').innerText = currentUserName;
+            
+            switchSection('section-login', 'section-game');
+            initGame();
+        });
+
+        // --- LOGIC MINI GAME ---
+        const emojis = ['🍕', '🎮', '📸'];
+        let gameCards = [...emojis, ...emojis];
+        let hasFlippedCard = false;
+        let lockBoard = false;
+        let firstCard, secondCard;
+        let matchCount = 0;
+
+        function shuffle(array) {
+            array.sort(() => Math.random() - 0.5);
+        }
+
+        function initGame() {
+            shuffle(gameCards);
+            const board = document.getElementById('memory-board');
+            board.innerHTML = '';
+            
+            gameCards.forEach((emoji) => {
+                const card = document.createElement('div');
+                card.classList.add('memory-card');
+                card.dataset.emoji = emoji;
+                
+                card.innerHTML = `
+                    <div class="memory-card-front">?</div>
+                    <div class="memory-card-back">${emoji}</div>
+                `;
+                
+                card.addEventListener('click', flipCard);
+                board.appendChild(card);
+            });
+        }
+
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === firstCard) return;
+
+            this.classList.add('flipped');
+
+            if (!hasFlippedCard) {
+                hasFlippedCard = true;
+                firstCard = this;
+                return;
+            }
+
+            secondCard = this;
+            checkForMatch();
+        }
+
+        function checkForMatch() {
+            let isMatch = firstCard.dataset.emoji === secondCard.dataset.emoji;
+
+            if (isMatch) {
+                disableCards();
+                matchCount++;
+                if (matchCount === emojis.length) {
+                    setTimeout(() => {
+                        switchSection('section-game', 'section-success');
+                        fireMiniConfetti();
+                    }, 1000);
+                }
+            } else {
+                unflipCards();
+            }
+        }
+
+        function disableCards() {
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+            
+            setTimeout(() => {
+                firstCard.classList.add('matched');
+                secondCard.classList.add('matched');
+                resetBoard();
+            }, 800);
+        }
+
+        function unflipCards() {
+            lockBoard = true;
+            setTimeout(() => {
+                firstCard.classList.remove('flipped');
+                secondCard.classList.remove('flipped');
+                resetBoard();
+            }, 1000);
+        }
+
+        function resetBoard() {
+            [hasFlippedCard, lockBoard] = [false, false];
+            [firstCard, secondCard] = [null, null];
+        }
+
+        // --- LOMPAT KE SCRAPBOOK (DARI SUCCESS) ---
+        document.getElementById('btn-next-scrapbook').addEventListener('click', () => {
+            switchSection('section-success', 'section-scrapbook');
+        });
+
+        // --- LOGIC SCRAPBOOK ASLI (KADO & CONFETTI) ---
+        const giftBtn = document.getElementById('gift-btn');
+        const giftWrapper = document.getElementById('gift-wrapper');
+        const finalMessage = document.getElementById('final-message');
+        const closeModalBtn = document.getElementById('close-modal');
+
+        giftBtn.addEventListener('click', () => {
+            giftWrapper.style.display = 'none';
+            finalMessage.classList.remove('hidden');
+            setTimeout(() => {
+                finalMessage.classList.add('show');
+            }, 50);
+            fireConfetti();
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            finalMessage.classList.remove('show');
+            setTimeout(() => {
+                finalMessage.classList.add('hidden');
+                giftWrapper.style.display = 'flex';
+            }, 500);
+        });
+
+        // --- SISTEM CONFETTI CUSTOM ---
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        let particles = [];
+        const colors = ['#2DD4BF', '#FBBF24', '#00E5FF', '#a7c7e7', '#c1e1c1'];
+
+        function fireConfetti() {
+            particles = []; 
+            const particleCount = 150; 
+            for (let i = 0; i < particleCount; i++) {
+                createParticle(canvas.width / 2, canvas.height - 100);
+            }
+            requestAnimationFrame(renderConfetti);
+        }
+
+        function fireMiniConfetti() {
+            particles = []; 
+            const particleCount = 50; 
+            for (let i = 0; i < particleCount; i++) {
+                createParticle(canvas.width / 2, canvas.height / 2, true);
+            }
+            requestAnimationFrame(renderConfetti);
+        }
+
+        function createParticle(startX, startY, isMini = false) {
+            particles.push({
+                x: startX,
+                y: startY,
+                r: Math.random() * 6 + 4,
+                dx: Math.random() * 20 - 10,
+                dy: isMini ? (Math.random() * -15 - 5) : (Math.random() * -20 - 10),
+                color: colors[Math.floor(Math.random() * colors.length)],
+                tilt: Math.floor(Math.random() * 10) - 10,
+                tiltAngleInc: (Math.random() * 0.07) + 0.05,
+                tiltAngle: 0
+            });
+        }
+
+        function renderConfetti() {
+            if(particles.length === 0) return;
+            requestAnimationFrame(renderConfetti);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let allDead = true;
+
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                p.dy += 0.4; // Gravitasi
+                p.x += p.dx;
+                p.y += p.dy;
+                p.tiltAngle += p.tiltAngleInc;
+
+                if (p.y < canvas.height) {
+                    allDead = false;
+                }
+
+                ctx.beginPath();
+                ctx.lineWidth = p.r;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.r, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+                ctx.stroke();
+            }
+
+            if (allDead) particles = [];
+        }
+
+        // --- SISTEM MUSIK LATAR ---
+        const bgMusic = document.getElementById('bg-music');
+        const musicBtn = document.getElementById('music-btn');
+        const volumeSlider = document.getElementById('volume-slider');
+        let isPlaying = false;
+
+        bgMusic.volume = 0.5;
+
+        musicBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                bgMusic.pause();
+                musicBtn.innerHTML = '<span>▶️</span> Play Our Birthday Soundtrack';
+                musicBtn.classList.remove('bg-orange-400', 'hover:bg-orange-500');
+                musicBtn.classList.add('bg-teal-500', 'hover:bg-teal-600');
+            } else {
+                bgMusic.play().catch(e => console.log("Audio play failed:", e));
+                musicBtn.innerHTML = '<span>⏸️</span> Pause Soundtrack';
+                musicBtn.classList.remove('bg-teal-500', 'hover:bg-teal-600');
+                musicBtn.classList.add('bg-orange-400', 'hover:bg-orange-500');
+            }
+            isPlaying = !isPlaying;
+        });
+
+        volumeSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+    </script>
+</body>
+</html>
