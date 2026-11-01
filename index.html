@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body {
-            /* Latar belakang dengan tekstur kertas/halus */
             background-color: #fdfbf7;
             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e6e1d6' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
             font-family: 'Poppins', sans-serif;
@@ -38,40 +37,26 @@
             transform: translateY(0);
         }
 
-        /* --- STYLES UNTUK WORD PUZZLE MINI GAME --- */
-        .puzzle-container {
-            max-width: 500px;
+        /* --- STYLES UNTUK PUZZLE KOTAK INTERAKTIF --- */
+        .puzzle-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            max-width: 320px;
             margin: 0 auto;
-            width: 100%;
         }
 
-        .letter-slot {
-            width: 55px;
-            height: 55px;
-            background-color: #f0fdf4;
-            border: 2px dashed #2dd4bf;
+        .puzzle-tile {
+            aspect-ratio: 1;
+            background-color: white;
+            border: 3px solid #99f6e4;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             font-weight: bold;
             color: #0f766e;
-            font-family: 'Caveat', cursive;
-        }
-
-        .letter-btn {
-            width: 55px;
-            height: 55px;
-            background-color: white;
-            border: 2px solid #99f6e4;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #0d9488;
             font-family: 'Caveat', cursive;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -79,22 +64,15 @@
             user-select: none;
         }
 
-        .letter-btn:hover {
-            background-color: #ccfbf1;
-            transform: translateY(-3px);
+        .puzzle-tile:hover {
+            background-color: #f0fdf4;
+            transform: scale(1.03);
         }
 
-        .letter-btn:active {
-            transform: translateY(0);
-        }
-
-        .letter-btn.selected {
-            background-color: #cbd5e1;
-            border-color: #94a3b8;
-            color: #64748b;
-            cursor: not-allowed;
-            transform: none !important;
-            opacity: 0.6;
+        .puzzle-tile.selected {
+            border-color: #f59e0b;
+            background-color: #fef3c7;
+            transform: scale(0.95);
         }
 
         /* --- STYLES ASLI (POLAROID & KADO) --- */
@@ -153,7 +131,7 @@
             40% { transform: translate(1px, -1px) rotate(1deg); }
             50% { transform: translate(-1px, 2px) rotate(-1deg); }
             60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            70% { transform: translate3px, 1px) rotate(-1deg); }
             80% { transform: translate(-1px, -1px) rotate(1deg); }
             90% { transform: translate(1px, 2px) rotate(0deg); }
             100% { transform: translate(1px, -2px) rotate(-1deg); }
@@ -224,51 +202,19 @@
         </div>
     </section>
 
-    <!-- SECTION 2: WORD PUZZLE GAME (CIE / HBD) -->
+    <!-- SECTION 2: SWAP PUZZLE GAME -->
     <section id="section-game" class="section-container flex-col items-center justify-center p-4 hidden">
         <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border-2 border-teal-100 text-center relative">
-            <h2 class="handwriting text-4xl text-teal-500 mb-2">Selesaikan Puzzle Dulu!</h2>
-            <p class="text-gray-600 text-sm mb-6">Susun huruf acak di bawah menjadi kalimat: <br><strong class="text-teal-600 text-base">CIE (Baris 1) & HBD (Baris 2)</strong></p>
+            <h2 class="handwriting text-4xl text-teal-500 mb-2">Pecahkan Puzzle Ini Dulu!</h2>
+            <p class="text-gray-600 text-sm mb-6">Klik satu kotak, lalu klik kotak lainnya untuk menukar posisi hingga membentuk sesuatu. ✨</p>
             
-            <div class="puzzle-container space-y-6">
-                <!-- TARGET BARIS 1: C I E -->
-                <div>
-                    <p class="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Baris 1 (3 Huruf)</p>
-                    <div id="row1-slots" class="flex justify-center gap-3">
-                        <div class="letter-slot">_</div>
-                        <div class="letter-slot">_</div>
-                        <div class="letter-slot">_</div>
-                    </div>
-                </div>
-
-                <!-- TARGET BARIS 2: H B D -->
-                <div>
-                    <p class="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Baris 2 (3 Huruf)</p>
-                    <div id="row2-slots" class="flex justify-center gap-3">
-                        <div class="letter-slot">_</div>
-                        <div class="letter-slot">_</div>
-                        <div class="letter-slot">_</div>
-                    </div>
-                </div>
-
-                <!-- PILIHAN HURUF ACAK -->
-                <div class="pt-2">
-                    <p class="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Pilih Huruf:</p>
-                    <div id="letter-pool" class="flex flex-wrap justify-center gap-3">
-                        <!-- Huruf di-generate via JS -->
-                    </div>
-                </div>
-
-                <!-- TOMBOL KONTROL -->
-                <div class="flex gap-3 pt-4">
-                    <button type="button" id="reset-puzzle" class="w-1/2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm">
-                        Reset Huruf 🔄
-                    </button>
-                    <button type="button" id="submit-puzzle" class="w-1/2 bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md transition-colors text-sm">
-                        Cek Jawaban ✅
-                    </button>
-                </div>
+            <div class="puzzle-grid mb-6" id="puzzle-board">
+                <!-- Kotak puzzle di-generate via JavaScript -->
             </div>
+
+            <button type="button" id="shuffle-btn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-6 rounded-lg text-sm transition-colors border border-gray-300">
+                Acak Ulang 🔀
+            </button>
         </div>
     </section>
 
@@ -279,7 +225,7 @@
             <h2 class="handwriting text-5xl text-teal-500 mb-4">Mantap, Berhasil!</h2>
             <p class="text-lg text-gray-700 mb-6">
                 Good job, <span id="display-name" class="font-bold text-teal-600">Bro</span>! <br>
-                Puzzle-nya kelar juga. Sekarang, waktunya lihat kejutannya...
+                Puzzlenya bener juga. Sekarang, waktunya lihat kejutannya...
             </p>
             <button id="btn-next-scrapbook" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
                 Gas Lihat Kejutan 🚀
@@ -457,130 +403,74 @@
             initPuzzle();
         });
 
-        // --- LOGIC WORD PUZZLE (CIE & HBD) ---
-        const targetRow1 = ['C', 'I', 'E'];
-        const targetRow2 = ['H', 'B', 'D'];
-        let currentPool = [];
-        let selectedRow1 = ['', '', ''];
-        let selectedRow2 = ['', '', ''];
+        // --- LOGIC SWAP PUZZLE (CIE HBD) ---
+        // Target susunan asli (Baris 1: C, I, E; Baris 2: H, B, D)
+        const winningOrder = ['C', 'I', 'E', 'H', 'B', 'D'];
+        let currentTiles = [];
+        let selectedTileIndex = null;
 
         function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
+            let arr = [...array];
+            do {
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                // Pastikan hasil acak tidak langsung menang
+            } while (arr.every((val, index) => val === winningOrder[index]));
+            return arr;
         }
 
         function initPuzzle() {
-            // Gabungkan huruf target lalu acak untuk pilihan
-            currentPool = shuffle([...targetRow1, ...targetRow2]);
-            selectedRow1 = ['', '', ''];
-            selectedRow2 = ['', '', ''];
+            currentTiles = shuffle(winningOrder);
+            selectedTileIndex = null;
             renderPuzzle();
         }
 
         function renderPuzzle() {
-            // Render Slot Baris 1
-            const r1Slots = document.getElementById('row1-slots');
-            r1Slots.innerHTML = '';
-            selectedRow1.forEach((char, index) => {
-                const slot = document.createElement('div');
-                slot.className = 'letter-slot cursor-pointer';
-                slot.innerText = char || '_';
-                slot.onclick = () => removeLetter(1, index);
-                r1Slots.appendChild(slot);
-            });
+            const board = document.getElementById('puzzle-board');
+            board.innerHTML = '';
 
-            // Render Slot Baris 2
-            const r2Slots = document.getElementById('row2-slots');
-            r2Slots.innerHTML = '';
-            selectedRow2.forEach((char, index) => {
-                const slot = document.createElement('div');
-                slot.className = 'letter-slot cursor-pointer';
-                slot.innerText = char || '_';
-                slot.onclick = () => removeLetter(2, index);
-                r2Slots.appendChild(slot);
-            });
-
-            // Render Huruf Pilihan (Pool)
-            const poolContainer = document.getElementById('letter-pool');
-            poolContainer.innerHTML = '';
-            currentPool.forEach((item, index) => {
-                const btn = document.createElement('div');
-                btn.className = `letter-btn ${item.used ? 'selected' : ''}`;
-                btn.innerText = item.char;
-                if (!item.used) {
-                    btn.onclick = () => selectLetter(index);
-                }
-                poolContainer.appendChild(btn);
+            currentTiles.forEach((letter, index) => {
+                const tile = document.createElement('div');
+                tile.className = `puzzle-tile ${selectedTileIndex === index ? 'selected' : ''}`;
+                tile.innerText = letter;
+                tile.onclick = () => handleTileClick(index);
+                board.appendChild(tile);
             });
         }
 
-        // Ubah struktur pool menjadi objek agar bisa melacak status 'used'
-        function initPuzzle() {
-            const rawLetters = [...targetRow1, ...targetRow2];
-            currentPool = shuffle(rawLetters).map(char => ({ char: char, used: false }));
-            selectedRow1 = ['', '', ''];
-            selectedRow2 = ['', '', ''];
-            renderPuzzle();
-        }
-
-        function selectLetter(poolIndex) {
-            if (currentPool[poolIndex].used) return;
-
-            let targetRow = null;
-            let targetIndex = -1;
-
-            // Cari slot kosong di baris 1 dulu, kalau penuh masuk baris 2
-            const emptyR1 = selectedRow1.indexOf('');
-            if (emptyR1 !== -1) {
-                selectedRow1[emptyR1] = currentPool[poolIndex].char;
-                currentPool[poolIndex].used = true;
+        function handleTileClick(index) {
+            if (selectedTileIndex === null) {
+                // Pilih kotak pertama yang mau ditukar
+                selectedTileIndex = index;
+                renderPuzzle();
             } else {
-                const emptyR2 = selectedRow2.indexOf('');
-                if (emptyR2 !== -1) {
-                    selectedRow2[emptyR2] = currentPool[poolIndex].char;
-                    currentPool[poolIndex].used = true;
-                }
+                // Pilih kotak kedua, lalu tukar posisinya
+                let temp = currentTiles[selectedTileIndex];
+                currentTiles[selectedTileIndex] = currentTiles[index];
+                currentTiles[index] = temp;
+
+                selectedTileIndex = null;
+                renderPuzzle();
+
+                // Cek apakah susunannya sudah benar
+                checkWinCondition();
             }
-            renderPuzzle();
         }
 
-        function removeLetter(rowNum, slotIndex) {
-            let charToRemove = '';
-            if (rowNum === 1) {
-                charToRemove = selectedRow1[slotIndex];
-                selectedRow1[slotIndex] = '';
-            } else {
-                charToRemove = selectedRow2[slotIndex];
-                selectedRow2[slotIndex] = '';
-            }
-
-            if (charToRemove) {
-                // Kembalikan status 'used' ke salah satu huruf di pool yang cocok
-                const poolItem = currentPool.find(item => item.char === charToRemove && item.used);
-                if (poolItem) poolItem.used = false;
-            }
-            renderPuzzle();
-        }
-
-        document.getElementById('reset-puzzle').addEventListener('click', () => {
-            initPuzzle();
-        });
-
-        document.getElementById('submit-puzzle').addEventListener('click', () => {
-            const isRow1Correct = selectedRow1.join('') === targetRow1.join('');
-            const isRow2Correct = selectedRow2.join('') === targetRow2.join('');
-
-            if (isRow1Correct && isRow2Correct) {
+        function checkWinCondition() {
+            const isWon = currentTiles.every((val, index) => val === winningOrder[index]);
+            if (isWon) {
                 setTimeout(() => {
                     switchSection('section-game', 'section-success');
                     fireMiniConfetti();
-                }, 300);
-            } else {
-                alert("Susunannya masih belum pas, bro! Coba dicek lagi baris CIE dan HBD-nya.");
+                }, 400);
             }
+        }
+
+        document.getElementById('shuffle-btn').addEventListener('click', () => {
+            initPuzzle();
         });
 
         // --- LOMPAT KE SCRAPBOOK (DARI SUCCESS) ---
